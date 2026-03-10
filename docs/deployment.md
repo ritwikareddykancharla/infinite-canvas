@@ -1,104 +1,137 @@
-# Deployment Guide
+# Deploying & Testing InfiniteCanvas on GCP
 
-## Prerequisites
+## API Key: Vertex AI vs AI Studio
 
-- Python 3.11+
-- Node 20+
-- Docker + Docker Compose (optional, for full-stack local)
-- Google Cloud SDK (`gcloud`) — for GCP deployment
-- Terraform ≥ 1.6 — for infrastructure provisioning
-- A Gemini API key from [Google AI Studio](https://aistudio.google.com)
+The backend uses `google-genai` SDK for Gemini Live. It supports two auth modes:
+
+| Mode | When to use | What you need |
+|------|-------------|---------------|
+| **Vertex AI** (recommended for GCP) | You have a GCP project with Vertex AI enabled | `gcloud auth`, project ID |
+| **AI Studio API key** | You have a key from aistudio.google.com | The API key string |
+
+**If you have a Vertex AI API key from Google Cloud Console** — that key goes in `GEMINI_API_KEY` in your `.env` and the code works as-is.
+
+**If you want to use ADC (service account / `gcloud auth`)** — see [Using Vertex AI with ADC](#using-vertex-ai-with-adc) below.
 
 ---
 
-## Local Development
+## 1. Run Locally First
 
-### Option A: Manual (separate terminals)
+This is the fastest way to verify everything works before touching GCP.
 
-**Backend:**
+### Clone & configure
+
 ```bash
 cd backend
 cp .env.example .env
-# Edit .env — set GEMINI_API_KEY=your_key
+```
+
+Edit `.env`:
+```
+GEMINI_API_KEY=<your key here>
+GOOGLE_CLOUD_PROJECT=<your-gcp-project-id>
+GCS_BUCKET_NAME=<your-bucket-name>   # can be anything for local testing
+ALLOWED_ORIGINS=http://localhost:3000
+```
+
+### Start the backend
+
+```bash
 pip install -r requirements.txt
 uvicorn main:app --reload --port 8000
 ```
 
-**Frontend:**
+Check it's alive:
+```bash
+curl http://localhost:8000/health
+# → {"status": "ok", "service": "infinite-canvas-orchestrator"}
+
+curl http://localhost:8000/api/scenes
+# → {"scenes": [...], "total": 12}
+```
+
+### Start the frontend
+
 ```bash
 cd frontend
 npm install
-# Create .env with:
-# REACT_APP_WS_URL=ws://localhost:8000/ws/voice
-# REACT_APP_API_URL=http://localhost:8000
 npm start
 # Opens http://localhost:3000
 ```
 
-### Option B: Docker Compose (recommended)
+Open the browser, allow microphone when prompted. The voice pipeline will be active. Try clicking the genre buttons first (they call `POST /api/intent` directly, no voice needed) to confirm the scene switching works.
+
+### Test the voice pipeline without a microphone
 
 ```bash
-# Copy and configure environment
-cp backend/.env.example .env
-# Edit .env — set GEMINI_API_KEY
-
-# Build and start both services
-docker-compose up --build
-
-# Frontend: http://localhost:3000
-# Backend:  http://localhost:8000
-# API docs: http://localhost:8000/docs
+# Manually inject an intent — simulates what Gemini Live would produce
+curl -X POST http://localhost:8000/api/intent \
+  -H "Content-Type: application/json" \
+  -d '{"genre": "horror", "action": "change_genre", "confidence": 0.9, "emotional_intensity": 0.8}'
 ```
 
-**Stopping:**
+The frontend should switch to horror visuals and audio.
+
 ```bash
-docker-compose down
+# Advance to next beat
+curl -X POST http://localhost:8000/api/intent \
+  -H "Content-Type: application/json" \
+  -d '{"action": "next_beat", "confidence": 1.0}'
+
+# Reset
+curl -X POST http://localhost:8000/api/intent \
+  -H "Content-Type: application/json" \
+  -d '{"action": "reset", "confidence": 1.0}'
 ```
 
-**Rebuilding after code changes:**
+### Test commentary endpoint
+
 ```bash
-docker-compose up --build --force-recreate
+curl -X POST http://localhost:8000/api/commentary \
+  -H "Content-Type: application/json" \
+  -d '{
+    "narrative_history": [
+      {"genre": "noir", "beat": "opening"},
+      {"genre": "horror", "beat": "confrontation"},
+      {"genre": "horror", "beat": "climax"}
+    ]
+  }'
 ```
 
 ---
 
-## Generate Video Assets (Veo 3.0)
+## 2. Using Vertex AI with ADC
 
-Before deploying, you need the 12 pre-generated video segments in `assets/video/`. Run the generation pipeline:
+If you want to use Application Default Credentials instead of an API key, update `backend/gemini/live_client.py` where the client is initialised:
 
-```bash
-# Preview — prints all 12 prompts, no API calls
-python scripts/generate_assets.py --dry-run
+```python
+# Current (API key):
+self._client = genai.Client(api_key=self.api_key)
 
-# Full generation (requires GCP project with Vertex AI + Veo 3.0 enabled)
-python scripts/generate_assets.py \
-  --project your-gcp-project-id \
-  --bucket your-gcs-bucket-name \
-  --concurrency 3
+# Change to (Vertex AI + ADC):
+self._client = genai.Client(
+    vertexai=True,
+    project=os.environ["GOOGLE_CLOUD_PROJECT"],
+    location="us-central1",
+)
 ```
 
-The script:
-1. Generates all 12 scenes via Veo 3.0 on Vertex AI
-2. Uploads MP4 files to GCS
-3. Writes public CDN URLs back to `assets/metadata/scene_graph.json`
-
-**Generation time:** ~15–30 min at concurrency=3 (Veo 3.0 generation is slow but high quality).
-
----
-
-## Google Cloud Deployment
-
-### 1. Authenticate
-
+Then authenticate locally:
 ```bash
-gcloud auth login
 gcloud auth application-default login
-gcloud config set project YOUR_PROJECT_ID
 ```
 
-### 2. Enable Required APIs
+And in `.env`, leave `GEMINI_API_KEY` blank — the code will fall through to ADC. The `GeminiLiveClient` skips the API key check if you change the client init as above.
+
+On Cloud Run, ADC is automatic — the service account attached to the Cloud Run service handles authentication. No key management needed.
+
+---
+
+## 3. Enable Required GCP APIs
 
 ```bash
+gcloud config set project YOUR_PROJECT_ID
+
 gcloud services enable \
   run.googleapis.com \
   storage.googleapis.com \
@@ -108,74 +141,185 @@ gcloud services enable \
   cloudbuild.googleapis.com
 ```
 
-### 3. Terraform Apply
+---
+
+## 4. Build & Push the Docker Image
 
 ```bash
-cd infrastructure
+# Configure Docker to use gcloud credentials
+gcloud auth configure-docker us-central1-docker.pkg.dev
 
-# Initialise providers
-terraform init
+# Create the Artifact Registry repo (one-time)
+gcloud artifacts repositories create infinite-canvas \
+  --repository-format=docker \
+  --location=us-central1
 
-# Preview changes
-terraform plan \
-  -var="project_id=your-gcp-project-id" \
-  -var="gemini_api_key=your-gemini-api-key" \
-  -var="region=us-central1"
-
-# Deploy
-terraform apply \
-  -var="project_id=your-gcp-project-id" \
-  -var="gemini_api_key=your-gemini-api-key" \
-  -var="region=us-central1"
-```
-
-**Resources created:**
-- Cloud Run service: `infinite-canvas-backend`
-- Cloud Storage bucket: `{project_id}-infinite-canvas-assets`
-- Cloud CDN backend bucket
-- Artifact Registry repository: `infinite-canvas`
-- Secret Manager secret: `gemini-api-key`
-- Cloud Monitoring uptime alert
-
-**Outputs:**
-```
-backend_url  = "https://infinite-canvas-backend-xxxxxxxxxx-uc.a.run.app"
-frontend_url = "https://infinite-canvas-frontend-xxxxxxxxxx-uc.a.run.app"
-assets_cdn   = "https://storage.googleapis.com/{project_id}-infinite-canvas-assets"
-```
-
-### 4. Build and Push Docker Images
-
-```bash
-# Backend
+# Build and push
 docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/backend:latest ./backend
 docker push us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/backend:latest
 
-# Frontend
 docker build -t us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/frontend:latest ./frontend
 docker push us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/frontend:latest
 ```
 
-Or use Cloud Build:
+---
+
+## 5. Deploy with Terraform
+
+The Terraform config in `infrastructure/` creates everything: Cloud Run, GCS bucket, CDN, service account, Secret Manager entry, and a latency alert.
+
 ```bash
-gcloud builds submit --config=cloudbuild.yaml .
+cd infrastructure
+
+# One-time: create the state bucket
+gsutil mb -l us-central1 gs://YOUR_PROJECT-tfstate
+
+terraform init
+
+terraform apply \
+  -var="project_id=YOUR_PROJECT_ID" \
+  -var="gemini_api_key=YOUR_KEY" \
+  -var="region=us-central1"
 ```
 
-### 5. Deploy to Cloud Run
+Terraform outputs the backend and CDN URLs when done.
+
+### What Terraform creates
+
+| Resource | Name |
+|----------|------|
+| Cloud Run | `infinite-canvas-orchestrator` |
+| GCS bucket | `{project_id}-infinite-canvas-assets` |
+| Cloud CDN | attached to the GCS bucket |
+| Artifact Registry | `infinite-canvas` |
+| Service Account | `infinite-canvas-run@...` |
+| Secret | `gemini-api-key` in Secret Manager |
+| Alert | Cloud Run latency > 1s |
+
+The Cloud Run service account gets `roles/storage.objectAdmin` (to serve assets), `roles/aiplatform.user` (for Vertex AI), and `roles/secretmanager.secretAccessor` (for the API key).
+
+---
+
+## 6. Deploy to Cloud Run (without Terraform)
+
+If you want to skip Terraform and deploy manually:
 
 ```bash
-# Backend
-gcloud run deploy infinite-canvas-backend \
-  --image us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/backend:latest \
+# Store the API key in Secret Manager
+echo -n "YOUR_GEMINI_API_KEY" | gcloud secrets create gemini-api-key \
+  --data-file=-
+
+# Create a service account
+gcloud iam service-accounts create infinite-canvas-run \
+  --display-name="InfiniteCanvas Cloud Run SA"
+
+# Grant it the roles it needs
+PROJECT=$(gcloud config get-value project)
+SA="infinite-canvas-run@${PROJECT}.iam.gserviceaccount.com"
+
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member="serviceAccount:$SA" --role="roles/aiplatform.user"
+gcloud projects add-iam-policy-binding $PROJECT \
+  --member="serviceAccount:$SA" --role="roles/storage.objectAdmin"
+gcloud secrets add-iam-policy-binding gemini-api-key \
+  --member="serviceAccount:$SA" --role="roles/secretmanager.secretAccessor"
+
+# Deploy the backend
+gcloud run deploy infinite-canvas-orchestrator \
+  --image us-central1-docker.pkg.dev/${PROJECT}/infinite-canvas/backend:latest \
   --region us-central1 \
   --allow-unauthenticated \
+  --service-account $SA \
   --set-secrets GEMINI_API_KEY=gemini-api-key:latest \
-  --memory 512Mi \
-  --concurrency 80
+  --set-env-vars GOOGLE_CLOUD_PROJECT=${PROJECT} \
+  --memory 1Gi \
+  --cpu 2 \
+  --timeout 3600 \
+  --port 8000
 
-# Frontend
+# Deploy the frontend
 gcloud run deploy infinite-canvas-frontend \
-  --image us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/frontend:latest \
+  --image us-central1-docker.pkg.dev/${PROJECT}/infinite-canvas/frontend:latest \
+  --region us-central1 \
+  --allow-unauthenticated \
+  --memory 256Mi \
+  --port 80
+```
+
+Note `--timeout 3600` on the backend — required for long-lived WebSocket sessions.
+
+---
+
+## 7. Verify the Deployment
+
+```bash
+BACKEND=$(gcloud run services describe infinite-canvas-orchestrator \
+  --region us-central1 --format='value(status.url)')
+
+# Health check
+curl $BACKEND/health
+# → {"status": "ok", "service": "infinite-canvas-orchestrator"}
+
+# Scene list
+curl $BACKEND/api/scenes
+
+# Inject a test intent
+curl -X POST $BACKEND/api/intent \
+  -H "Content-Type: application/json" \
+  -d '{"genre": "scifi", "action": "change_genre", "confidence": 0.95}'
+
+# Check logs
+gcloud run services logs read infinite-canvas-orchestrator \
+  --region us-central1 --tail 50
+```
+
+---
+
+## 8. Upload Video Assets to GCS
+
+After creating the GCS bucket (Terraform does this), upload your pre-generated video segments:
+
+```bash
+BUCKET="${PROJECT}-infinite-canvas-assets"
+
+# Upload all segments
+gsutil -m cp assets/video/*.mp4 gs://$BUCKET/video/
+gsutil -m cp assets/audio/*.wav gs://$BUCKET/audio/
+gsutil -m cp assets/metadata/*.json gs://$BUCKET/metadata/
+
+# Make them publicly readable
+gsutil iam ch allUsers:objectViewer gs://$BUCKET
+```
+
+Or run the Veo 3.0 generation pipeline to generate them from scratch:
+
+```bash
+python scripts/generate_assets.py \
+  --project $PROJECT \
+  --bucket $BUCKET \
+  --concurrency 3
+```
+
+---
+
+## 9. Set the Frontend Backend URL
+
+The frontend needs to know where the backend is. Set `REACT_APP_WS_URL` and `REACT_APP_API_URL` at build time:
+
+```bash
+BACKEND_URL=$(gcloud run services describe infinite-canvas-orchestrator \
+  --region us-central1 --format='value(status.url)')
+
+docker build \
+  --build-arg REACT_APP_WS_URL="wss://${BACKEND_URL#https://}/ws/voice" \
+  --build-arg REACT_APP_API_URL="$BACKEND_URL" \
+  -t us-central1-docker.pkg.dev/${PROJECT}/infinite-canvas/frontend:latest \
+  ./frontend
+
+docker push us-central1-docker.pkg.dev/${PROJECT}/infinite-canvas/frontend:latest
+
+gcloud run deploy infinite-canvas-frontend \
+  --image us-central1-docker.pkg.dev/${PROJECT}/infinite-canvas/frontend:latest \
   --region us-central1 \
   --allow-unauthenticated \
   --memory 256Mi
@@ -183,93 +327,21 @@ gcloud run deploy infinite-canvas-frontend \
 
 ---
 
-## Cloud Run Configuration Details
+## Common Issues
 
-| Setting | Value | Reason |
-|---------|-------|--------|
-| Memory | 512Mi (backend) | scipy/numpy audio processing |
-| Concurrency | 80 | Each WebSocket = 1 concurrent request; async handles the rest |
-| Min instances | 0 | Cost-saving; cold starts are acceptable for this demo |
-| Max instances | 10 | Scales for hackathon traffic spikes |
-| Timeout | 3600s | Long-lived WebSocket sessions require extended timeout |
+**WebSocket disconnects immediately on Cloud Run**
+Add `--timeout 3600` to the Cloud Run deploy command. The default 300s timeout kills long-lived WebSocket connections.
 
-**WebSocket note:** Cloud Run supports WebSockets natively on HTTP/2. No special configuration needed.
+**`GEMINI_API_KEY not set — using mock intent generator` in logs**
+The secret is not being injected. Check the service account has `roles/secretmanager.secretAccessor` and the secret name matches exactly.
 
----
-
-## MCP Server on Cloud Run (optional)
-
-To expose the MCP server for remote ADK agents:
-
+**CORS errors in browser**
+Set `ALLOWED_ORIGINS` to your frontend Cloud Run URL:
 ```bash
-gcloud run deploy infinite-canvas-mcp \
-  --image us-central1-docker.pkg.dev/YOUR_PROJECT/infinite-canvas/backend:latest \
-  --command python \
-  --args "backend/adk/mcp_server.py" \
-  --set-env-vars MCP_TRANSPORT=sse,MCP_PORT=8080 \
+gcloud run services update infinite-canvas-orchestrator \
   --region us-central1 \
-  --allow-unauthenticated \
-  --port 8080
+  --set-env-vars ALLOWED_ORIGINS=https://your-frontend-url.run.app
 ```
 
-Then connect:
-```bash
-claude mcp add --transport sse infinite-canvas https://infinite-canvas-mcp-xxxx.run.app/sse
-```
-
----
-
-## Environment Variables Reference
-
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `GEMINI_API_KEY` | yes | — | Google AI / Gemini API key |
-| `GCS_BUCKET_NAME` | no | — | GCS bucket for assets (production) |
-| `GOOGLE_CLOUD_PROJECT` | no | — | GCP project ID |
-| `GOOGLE_APPLICATION_CREDENTIALS` | no | — | Path to service account JSON |
-| `ALLOWED_ORIGINS` | no | `*` | CORS origins (comma-separated) |
-| `GEMINI_MODEL` | no | `gemini-2.0-flash` | ADK agent model |
-| `MCP_TRANSPORT` | no | `stdio` | MCP server transport |
-| `MCP_PORT` | no | `8001` | MCP SSE port |
-
----
-
-## Verifying the Deployment
-
-```bash
-# Health check
-curl https://your-backend.run.app/health
-# → {"status": "ok", "service": "infinite-canvas-orchestrator"}
-
-# List scenes
-curl https://your-backend.run.app/api/scenes
-# → {"scenes": [...], "total": 12}
-
-# Test commentary
-curl -X POST https://your-backend.run.app/api/commentary \
-  -H "Content-Type: application/json" \
-  -d '{"narrative_history": [{"genre": "noir", "beat": "opening"}, {"genre": "horror", "beat": "climax"}]}'
-```
-
----
-
-## Proof of Cloud Deployment (Hackathon Requirement)
-
-The Gemini Live Agent Challenge requires proof of Google Cloud deployment. Use one of:
-
-**Option 1 — Screen recording:**
-```bash
-# Show Cloud Run service running
-gcloud run services describe infinite-canvas-backend --region us-central1
-
-# Show live logs
-gcloud run services logs read infinite-canvas-backend --region us-central1 --tail=50
-```
-
-**Option 2 — Code evidence:**
-- `infrastructure/main.tf` — full Terraform configuration for Cloud Run, GCS, CDN
-- `backend/Dockerfile` — container image definition
-- `frontend/Dockerfile` — multi-stage production build
-- Both services deployed to `us-central1` Cloud Run
-
-The backend uses `google-cloud-storage` and `google-cloud-aiplatform` (Vertex AI / Veo 3.0) — additional evidence of Google Cloud service usage.
+**Assets 404**
+Videos aren't in GCS yet. Either upload them manually or run `generate_assets.py`. Local fallback: place MP4 files in `backend/assets/video/` and they'll be served from the static mount.
