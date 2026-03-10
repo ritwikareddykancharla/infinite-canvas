@@ -1,6 +1,7 @@
 """
 REST API routes for InfiniteCanvas orchestration backend.
-Provides endpoints for scene resolution, preload hints, and manual intent injection.
+Provides endpoints for scene resolution, preload hints, manual intent injection,
+and ADK-powered director's commentary.
 """
 
 from fastapi import APIRouter, HTTPException, Request
@@ -81,3 +82,46 @@ async def audio_transition(from_genre: str, to_genre: str, duration_ms: int = 80
     crossfader = AudioCrossfader()
     plan = crossfader.build_transition_plan(from_genre, to_genre, duration_ms)
     return plan
+
+
+# ── ADK-powered endpoints ─────────────────────────────────────────────────────
+
+class CommentaryRequest(BaseModel):
+    narrative_history: list = Field(
+        ...,
+        description="Ordered list of scene choices: [{genre, beat}, ...]",
+        examples=[[{"genre": "noir", "beat": "opening"}, {"genre": "horror", "beat": "confrontation"}]],
+    )
+    session_id: str = Field("default", description="Viewer session identifier")
+
+
+@router.post("/commentary")
+async def generate_commentary(body: CommentaryRequest):
+    """
+    Generate AI director's commentary for a viewer's narrative choices.
+    Uses the ADK LlmAgent for richer, personality-driven analysis.
+    Falls back to the local implementation if ADK is unavailable.
+    """
+    from adk.agent import generate_director_commentary, run_agent
+
+    # Fast local fallback (no LLM call needed for basic stats)
+    base = generate_director_commentary(body.narrative_history)
+
+    # Enrich with ADK agent if available
+    try:
+        history_str = ", ".join(
+            f"{e.get('genre')} ({e.get('beat', 'opening')})"
+            for e in body.narrative_history
+        )
+        prompt = (
+            f"Generate a director's commentary for a viewer who watched these scenes in order: "
+            f"{history_str}. "
+            f"Use generate_director_commentary with the full history, then add two sentences of "
+            f"cinematic insight about their storytelling instincts."
+        )
+        adk_response = await run_agent(prompt, session_id=body.session_id)
+        base["adk_insight"] = adk_response
+    except Exception:
+        pass  # Base commentary is always returned
+
+    return base
