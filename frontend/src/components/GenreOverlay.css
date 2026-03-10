@@ -1,0 +1,200 @@
+/* Status bar */
+.status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent);
+  transition: background 0.3s;
+}
+
+.status-bar[data-listening="true"] {
+  background: linear-gradient(to bottom, rgba(255,255,255,0.08), transparent);
+}
+
+.beat-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.beat-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.4s ease;
+}
+
+.beat-dot[data-active="true"] {
+  background: #fff;
+  box-shadow: 0 0 8px rgba(255,255,255,0.8);
+}
+
+.beat-dot[data-past="true"] {
+  background: rgba(255,255,255,0.5);
+}
+
+.beat-label {
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+  margin-left: 4px;
+}
+
+.status-message {
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  text-align: right;
+  max-width: 300px;
+  transition: all 0.3s;
+}
+
+.status-message[data-transitioning="true"] {
+  color: var(--text, #fff);
+  text-shadow: 0 0 12px currentColor;
+}
+
+.listening-indicator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #fff;
+  animation: fadeIn 0.3s ease;
+}
+
+.listening-indicator .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff4444;
+  animation: pulse 0.8s ease-in-out infinite;
+}
+
+/* Genre panel */
+.genre-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 24px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+.genre-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.7);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  padding: 8px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.2s;
+}
+
+.genre-toggle:hover {
+  border-color: rgba(255,255,255,0.5);
+  background: rgba(0,0,0,0.85);
+}
+
+.current-genre-label {
+  font-size: 11px;
+  letter-spacing: 3px;
+  font-weight: bold;
+  color: #fff;
+}
+
+[data-genre="noir"] .current-genre-label { color: #d4af37; }
+[data-genre="romcom"] .current-genre-label { color: #ff6b9d; }
+[data-genre="horror"] .current-genre-label { color: #ff4444; }
+[data-genre="scifi"] .current-genre-label { color: #00d4ff; }
+
+.toggle-arrow {
+  font-size: 9px;
+  color: rgba(255,255,255,0.5);
+}
+
+.genre-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeIn 0.2s ease;
+}
+
+.genre-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(0,0,0,0.8);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 10px 14px;
+  cursor: pointer;
+  font-family: inherit;
+  min-width: 180px;
+  transition: all 0.2s;
+  text-align: left;
+}
+
+.genre-btn:hover:not(:disabled) {
+  border-color: rgba(255,255,255,0.4);
+  background: rgba(255,255,255,0.08);
+}
+
+.genre-btn[data-active="true"] {
+  border-color: rgba(255,255,255,0.6);
+  background: rgba(255,255,255,0.12);
+}
+
+.genre-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.genre-btn[data-genre="noir"] { border-color: rgba(212,175,55,0.3); }
+.genre-btn[data-genre="romcom"] { border-color: rgba(255,107,157,0.3); }
+.genre-btn[data-genre="horror"] { border-color: rgba(255,68,68,0.3); }
+.genre-btn[data-genre="scifi"] { border-color: rgba(0,212,255,0.3); }
+
+.genre-emoji { font-size: 16px; }
+.genre-name {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #fff;
+  font-weight: bold;
+  flex: 1;
+}
+.genre-hint {
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 1px;
+}
+
+/* Voice hints */
+.voice-hints {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 30;
+  text-align: center;
+  pointer-events: none;
+}
+
+.voice-hints p {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: rgba(255,255,255,0.25);
+}

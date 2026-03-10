@@ -1,0 +1,56 @@
+:root {
+  --color-noir: #1a1a2e;
+  --color-romcom: #ff6b9d;
+  --color-horror: #8b0000;
+  --color-scifi: #00d4ff;
+  --transition-speed: 0.8s;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background: #000;
+  color: #fff;
+  font-family: 'Courier New', monospace;
+  overflow: hidden;
+  height: 100vh;
+  width: 100vw;
+}
+
+#root {
+  height: 100vh;
+  width: 100vw;
+}
+
+.canvas-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Genre-specific color themes */
+[data-genre="noir"] { --accent: var(--color-noir); --text: #d4af37; }
+[data-genre="romcom"] { --accent: var(--color-romcom); --text: #fff; }
+[data-genre="horror"] { --accent: var(--color-horror); --text: #ff4444; }
+[data-genre="scifi"] { --accent: var(--color-scifi); --text: #00d4ff; }
+
+/* Voice indicator pulse animation */
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.15); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glitchIn {
+  0% { clip-path: inset(0 100% 0 0); }
+  100% { clip-path: inset(0 0% 0 0); }
+}

@@ -1,0 +1,278 @@
+{
+  "noir_opening": {
+    "genre": "noir",
+    "beat": "opening",
+    "beat_index": 0,
+    "video_url": "/assets/video/noir_opening.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.3,
+    "semantic_tags": ["tension", "shadow", "mystery", "anticipation"],
+    "visual_anchors": {
+      "camera_angle": "medium_shot",
+      "actor_position": "left_frame",
+      "light_direction": "top_right",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/noir_bass.mp3",
+      "/assets/audio/noir_drums.mp3",
+      "/assets/audio/noir_melody.mp3",
+      "/assets/audio/noir_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6500,
+    "transition_compatibility": ["horror_opening", "scifi_opening", "romcom_opening"]
+  },
+  "noir_confrontation": {
+    "genre": "noir",
+    "beat": "confrontation",
+    "beat_index": 1,
+    "video_url": "/assets/video/noir_confrontation.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.6,
+    "semantic_tags": ["confrontation", "object_transfer", "revelation", "tension"],
+    "visual_anchors": {
+      "camera_angle": "close_up",
+      "actor_position": "center_frame",
+      "light_direction": "side_left",
+      "object_position": "foreground_right"
+    },
+    "audio_stems": [
+      "/assets/audio/noir_bass.mp3",
+      "/assets/audio/noir_drums.mp3",
+      "/assets/audio/noir_melody.mp3",
+      "/assets/audio/noir_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6800,
+    "transition_compatibility": ["horror_confrontation", "romcom_confrontation", "scifi_confrontation"]
+  },
+  "noir_climax": {
+    "genre": "noir",
+    "beat": "climax",
+    "beat_index": 2,
+    "video_url": "/assets/video/noir_climax.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.8,
+    "semantic_tags": ["resolution", "aftermath", "revelation", "consequence"],
+    "visual_anchors": {
+      "camera_angle": "wide_shot",
+      "actor_position": "separated",
+      "light_direction": "overhead",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/noir_bass.mp3",
+      "/assets/audio/noir_drums.mp3",
+      "/assets/audio/noir_melody.mp3",
+      "/assets/audio/noir_ambient.mp3"
+    ],
+    "pivot_frame_ms": 7000,
+    "transition_compatibility": ["horror_climax", "scifi_climax"]
+  },
+  "romcom_opening": {
+    "genre": "romcom",
+    "beat": "opening",
+    "beat_index": 0,
+    "video_url": "/assets/video/romcom_opening.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.6,
+    "semantic_tags": ["warmth", "connection", "anticipation", "hope"],
+    "visual_anchors": {
+      "camera_angle": "medium_shot",
+      "actor_position": "left_frame",
+      "light_direction": "top_right",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/romcom_bass.mp3",
+      "/assets/audio/romcom_drums.mp3",
+      "/assets/audio/romcom_melody.mp3",
+      "/assets/audio/romcom_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6500,
+    "transition_compatibility": ["noir_opening", "scifi_opening"]
+  },
+  "romcom_confrontation": {
+    "genre": "romcom",
+    "beat": "confrontation",
+    "beat_index": 1,
+    "video_url": "/assets/video/romcom_confrontation.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.4,
+    "semantic_tags": ["flirtation", "object_transfer", "connection", "playfulness"],
+    "visual_anchors": {
+      "camera_angle": "close_up",
+      "actor_position": "center_frame",
+      "light_direction": "side_left",
+      "object_position": "foreground_right"
+    },
+    "audio_stems": [
+      "/assets/audio/romcom_bass.mp3",
+      "/assets/audio/romcom_drums.mp3",
+      "/assets/audio/romcom_melody.mp3",
+      "/assets/audio/romcom_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6800,
+    "transition_compatibility": ["noir_confrontation", "scifi_confrontation"]
+  },
+  "romcom_climax": {
+    "genre": "romcom",
+    "beat": "climax",
+    "beat_index": 2,
+    "video_url": "/assets/video/romcom_climax.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.9,
+    "semantic_tags": ["resolution", "togetherness", "joy", "declaration"],
+    "visual_anchors": {
+      "camera_angle": "wide_shot",
+      "actor_position": "together_center",
+      "light_direction": "overhead",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/romcom_bass.mp3",
+      "/assets/audio/romcom_drums.mp3",
+      "/assets/audio/romcom_melody.mp3",
+      "/assets/audio/romcom_ambient.mp3"
+    ],
+    "pivot_frame_ms": 7000,
+    "transition_compatibility": []
+  },
+  "horror_opening": {
+    "genre": "horror",
+    "beat": "opening",
+    "beat_index": 0,
+    "video_url": "/assets/video/horror_opening.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.5,
+    "semantic_tags": ["dread", "shadow", "unease", "threat"],
+    "visual_anchors": {
+      "camera_angle": "medium_shot",
+      "actor_position": "left_frame",
+      "light_direction": "top_right",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/horror_bass.mp3",
+      "/assets/audio/horror_drums.mp3",
+      "/assets/audio/horror_melody.mp3",
+      "/assets/audio/horror_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6500,
+    "transition_compatibility": ["noir_opening", "scifi_opening"]
+  },
+  "horror_confrontation": {
+    "genre": "horror",
+    "beat": "confrontation",
+    "beat_index": 1,
+    "video_url": "/assets/video/horror_confrontation.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.85,
+    "semantic_tags": ["threat", "object_transfer", "revelation", "terror"],
+    "visual_anchors": {
+      "camera_angle": "close_up",
+      "actor_position": "center_frame",
+      "light_direction": "side_left",
+      "object_position": "foreground_right"
+    },
+    "audio_stems": [
+      "/assets/audio/horror_bass.mp3",
+      "/assets/audio/horror_drums.mp3",
+      "/assets/audio/horror_melody.mp3",
+      "/assets/audio/horror_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6800,
+    "transition_compatibility": ["noir_confrontation", "scifi_confrontation"]
+  },
+  "horror_climax": {
+    "genre": "horror",
+    "beat": "climax",
+    "beat_index": 2,
+    "video_url": "/assets/video/horror_climax.mp4",
+    "duration_s": 8,
+    "emotional_valence": -0.95,
+    "semantic_tags": ["consequence", "dread", "aftermath", "darkness"],
+    "visual_anchors": {
+      "camera_angle": "wide_shot",
+      "actor_position": "separated",
+      "light_direction": "overhead",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/horror_bass.mp3",
+      "/assets/audio/horror_drums.mp3",
+      "/assets/audio/horror_melody.mp3",
+      "/assets/audio/horror_ambient.mp3"
+    ],
+    "pivot_frame_ms": 7000,
+    "transition_compatibility": ["noir_climax"]
+  },
+  "scifi_opening": {
+    "genre": "scifi",
+    "beat": "opening",
+    "beat_index": 0,
+    "video_url": "/assets/video/scifi_opening.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.2,
+    "semantic_tags": ["wonder", "technology", "mystery", "future"],
+    "visual_anchors": {
+      "camera_angle": "medium_shot",
+      "actor_position": "left_frame",
+      "light_direction": "top_right",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/scifi_bass.mp3",
+      "/assets/audio/scifi_drums.mp3",
+      "/assets/audio/scifi_melody.mp3",
+      "/assets/audio/scifi_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6500,
+    "transition_compatibility": ["noir_opening", "horror_opening", "romcom_opening"]
+  },
+  "scifi_confrontation": {
+    "genre": "scifi",
+    "beat": "confrontation",
+    "beat_index": 1,
+    "video_url": "/assets/video/scifi_confrontation.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.0,
+    "semantic_tags": ["revelation", "technology", "object_transfer", "choice"],
+    "visual_anchors": {
+      "camera_angle": "close_up",
+      "actor_position": "center_frame",
+      "light_direction": "side_left",
+      "object_position": "foreground_right"
+    },
+    "audio_stems": [
+      "/assets/audio/scifi_bass.mp3",
+      "/assets/audio/scifi_drums.mp3",
+      "/assets/audio/scifi_melody.mp3",
+      "/assets/audio/scifi_ambient.mp3"
+    ],
+    "pivot_frame_ms": 6800,
+    "transition_compatibility": ["noir_confrontation", "horror_confrontation"]
+  },
+  "scifi_climax": {
+    "genre": "scifi",
+    "beat": "climax",
+    "beat_index": 2,
+    "video_url": "/assets/video/scifi_climax.mp4",
+    "duration_s": 8,
+    "emotional_valence": 0.3,
+    "semantic_tags": ["resolution", "technology", "future", "transcendence"],
+    "visual_anchors": {
+      "camera_angle": "wide_shot",
+      "actor_position": "separated",
+      "light_direction": "overhead",
+      "object_position": "table_center"
+    },
+    "audio_stems": [
+      "/assets/audio/scifi_bass.mp3",
+      "/assets/audio/scifi_drums.mp3",
+      "/assets/audio/scifi_melody.mp3",
+      "/assets/audio/scifi_ambient.mp3"
+    ],
+    "pivot_frame_ms": 7000,
+    "transition_compatibility": ["noir_climax", "horror_climax"]
+  }
+}
