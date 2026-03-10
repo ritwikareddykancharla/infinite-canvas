@@ -1,0 +1,179 @@
+.commentary-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.5s ease;
+  backdrop-filter: blur(8px);
+}
+
+.commentary-panel {
+  width: 90%;
+  max-width: 560px;
+  background: rgba(10, 10, 15, 0.95);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 12px;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.commentary-header h2 {
+  font-size: 13px;
+  letter-spacing: 5px;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.commentary-header .subtitle {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+  letter-spacing: 1px;
+}
+
+.narrative-path h3,
+.genre-stats h3 {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: rgba(255, 255, 255, 0.4);
+  margin-bottom: 14px;
+}
+
+.path-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.path-node {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.04);
+  border-left: 3px solid transparent;
+  font-size: 11px;
+  animation: fadeIn 0.3s ease;
+}
+
+.path-node[data-genre="noir"] { border-color: #d4af37; }
+.path-node[data-genre="romcom"] { border-color: #ff6b9d; }
+.path-node[data-genre="horror"] { border-color: #ff4444; }
+.path-node[data-genre="scifi"] { border-color: #00d4ff; }
+
+.path-index {
+  color: rgba(255, 255, 255, 0.3);
+  min-width: 20px;
+  font-size: 9px;
+}
+
+.path-genre { color: #fff; font-weight: bold; letter-spacing: 1px; }
+.path-beat { color: rgba(255, 255, 255, 0.4); font-size: 10px; }
+
+.stats-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.stat-label {
+  font-size: 9px;
+  letter-spacing: 2px;
+  min-width: 60px;
+  color: rgba(255,255,255,0.6);
+}
+
+.stat-bar-track {
+  flex: 1;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 2px;
+  transition: width 1s ease;
+  background: rgba(255,255,255,0.3);
+}
+
+.stat-bar-fill[data-genre="noir"] { background: #d4af37; }
+.stat-bar-fill[data-genre="romcom"] { background: #ff6b9d; }
+.stat-bar-fill[data-genre="horror"] { background: #ff4444; }
+.stat-bar-fill[data-genre="scifi"] { background: #00d4ff; }
+
+.stat-pct {
+  font-size: 9px;
+  color: rgba(255,255,255,0.4);
+  min-width: 30px;
+  text-align: right;
+}
+
+.personality-read {
+  padding: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.personality-read p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.8);
+  font-style: italic;
+  text-align: center;
+}
+
+.commentary-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.btn-restart,
+.btn-close {
+  flex: 1;
+  padding: 12px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 3px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-restart {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+}
+
+.btn-restart:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.btn-close {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.btn-close:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
+}

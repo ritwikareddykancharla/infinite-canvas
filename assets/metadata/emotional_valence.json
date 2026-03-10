@@ -1,0 +1,57 @@
+{
+  "valence_scale": {
+    "description": "Emotional valence from -1.0 (maximum dread) to +1.0 (maximum joy)",
+    "negative": "dread, threat, tension, betrayal",
+    "neutral": "mystery, wonder, ambiguity",
+    "positive": "joy, connection, hope, warmth"
+  },
+  "genre_profiles": {
+    "noir": {
+      "mean_valence": -0.57,
+      "valence_range": [-0.8, -0.3],
+      "dominant_emotions": ["tension", "mystery", "melancholy", "moral_ambiguity"],
+      "musical_tempo_bpm": 72,
+      "color_temperature_k": 3200
+    },
+    "romcom": {
+      "mean_valence": 0.63,
+      "valence_range": [0.4, 0.9],
+      "dominant_emotions": ["joy", "warmth", "hope", "playfulness"],
+      "musical_tempo_bpm": 120,
+      "color_temperature_k": 5600
+    },
+    "horror": {
+      "mean_valence": -0.78,
+      "valence_range": [-0.95, -0.5],
+      "dominant_emotions": ["dread", "terror", "threat", "despair"],
+      "musical_tempo_bpm": 55,
+      "color_temperature_k": 2700
+    },
+    "scifi": {
+      "mean_valence": 0.17,
+      "valence_range": [-0.1, 0.4],
+      "dominant_emotions": ["wonder", "curiosity", "unease", "transcendence"],
+      "musical_tempo_bpm": 90,
+      "color_temperature_k": 6500
+    }
+  },
+  "beat_modifiers": {
+    "opening": 0.0,
+    "confrontation": -0.2,
+    "climax": -0.1
+  },
+  "transition_comfort_matrix": {
+    "noir->romcom": 0.35,
+    "noir->horror": 0.75,
+    "noir->scifi": 0.60,
+    "romcom->noir": 0.40,
+    "romcom->horror": 0.20,
+    "romcom->scifi": 0.55,
+    "horror->noir": 0.70,
+    "horror->romcom": 0.15,
+    "horror->scifi": 0.50,
+    "scifi->noir": 0.65,
+    "scifi->romcom": 0.50,
+    "scifi->horror": 0.55
+  }
+}

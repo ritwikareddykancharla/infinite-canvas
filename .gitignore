@@ -1,0 +1,50 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+venv/
+env/
+
+# Build outputs
+frontend/build/
+dist/
+
+# Environment files
+.env
+.env.local
+.env.production
+backend/.env
+credentials/
+*.json.key
+service-account.json
+
+# Terraform state
+infrastructure/.terraform/
+infrastructure/*.tfstate
+infrastructure/*.tfstate.backup
+infrastructure/.terraform.lock.hcl
+
+# Generated video/audio assets (large files — store in GCS)
+assets/video/*.mp4
+assets/audio/*.mp3
+assets/audio/*.wav
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Coverage
+.coverage
+htmlcov/

@@ -1,0 +1,26 @@
+.canvas-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  transition: background 1s ease;
+}
+
+[data-genre="noir"] { background: #0a0a0f; }
+[data-genre="romcom"] { background: #1a0010; }
+[data-genre="horror"] { background: #0f0000; }
+[data-genre="scifi"] { background: #00050f; }
+
+.ws-status {
+  position: fixed;
+  top: 12px;
+  right: 16px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  opacity: 0.5;
+  z-index: 100;
+  transition: color 0.3s;
+}
+
+.ws-status[data-connected="true"] { color: #00ff88; }
+.ws-status[data-connected="false"] { color: #ff4444; }
