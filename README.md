@@ -27,17 +27,68 @@ InfiniteCanvas is a voice-controlled cinematic experience where viewers become d
 ## Architecture
 
 ```
-Browser (React + WebGL)
-    │ PCM audio stream (WebSocket)
-    ▼
-FastAPI Backend (Cloud Run)
-    │ Gemini Live API → intent JSON
-    ▼
-Scene Conductor
-    │ Semantic matching → video segment
-    ▼
-Pre-Generated Asset Library (Cloud Storage / CDN)
-4 genres × 3 beats = 12 video segments (Veo 3.0)
+┌─────────────────────────────────────────────────────────────────┐
+│                          CLIENT LAYER                           │
+│  ┌─────────────────┐  ┌──────────────┐  ┌────────────────────┐ │
+│  │   React App     │  │  Web Audio   │  │  WebSocket Client  │ │
+│  │                 │  │  Capture     │  │                    │ │
+│  │ • VideoPlayer   │  │ • PCM16      │  │ • Intent receiver  │ │
+│  │ • WebGL canvas  │  │   16kHz mono │  │ • Reconnect logic  │ │
+│  │ • GenreOverlay  │  │ • Mic stream │  │                    │ │
+│  │ • Commentary    │  │              │  │                    │ │
+│  └────────┬────────┘  └──────┬───────┘  └────────┬───────────┘ │
+└───────────┼──────────────────┼───────────────────┼─────────────┘
+            └──────────────────┴───────────────────┘
+                                       │ PCM audio bytes (WebSocket)
+                                       ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                     GEMINI LIVE API LAYER                       │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  gemini-2.0-flash-live-001                              │   │
+│  │  • Real-time speech-to-intent (<500ms)                  │   │
+│  │  • Cinematic intent system prompt                       │   │
+│  │  • Structured JSON output                               │   │
+│  │    {genre, action, confidence, emotional_intensity}     │   │
+│  └─────────────────────────┬───────────────────────────────┘   │
+└────────────────────────────┼────────────────────────────────────┘
+                             │ intent JSON
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  ORCHESTRATION ENGINE (Cloud Run)               │
+│  ┌───────────────┐  ┌───────────────┐  ┌──────────────────────┐ │
+│  │  Narrative    │  │    Scene      │  │   Audio              │ │
+│  │  State        │  │  Conductor    │  │   Crossfader         │ │
+│  │  Machine      │  │               │  │                      │ │
+│  │               │  │ • Intent →    │  │ • Stem transition    │ │
+│  │ • Coherence   │  │   segment     │  │   plan (bass/drums/  │ │
+│  │   guardrails  │  │ • Genre       │  │   melody/ambient)    │ │
+│  │ • Conflict    │  │   adjacency   │  │ • Equal-power        │ │
+│  │   detection   │  │ • Preload     │  │   envelopes          │ │
+│  │ • History     │  │   hints       │  │                      │ │
+│  └───────────────┘  └───────┬───────┘  └──────────────────────┘ │
+└───────────────────────────┬─┴────────────────────────────────────┘
+                            │ scene descriptor + audio transition plan
+                            ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                  PRE-GENERATED ASSET LIBRARY                    │
+│         Google Cloud Storage + CDN (us-central1)                │
+│                                                                 │
+│   NOIR          ROM-COM        HORROR         SCI-FI            │
+│  ┌──┬──┬──┐    ┌──┬──┬──┐    ┌──┬──┬──┐    ┌──┬──┬──┐        │
+│  │Op│Cn│Cl│    │Op│Cn│Cl│    │Op│Cn│Cl│    │Op│Cn│Cl│        │
+│  │8s│8s│8s│    │8s│8s│8s│    │8s│8s│8s│    │8s│8s│8s│        │
+│  └──┴──┴──┘    └──┴──┴──┘    └──┴──┴──┘    └──┴──┴──┘        │
+│                                                                 │
+│  Op=Opening  Cn=Confrontation  Cl=Climax                       │
+│  Generated via: Veo 3.0 on Vertex AI (batch)                   │
+│  Metadata: scene_graph.json · emotional_valence.json           │
+└─────────────────────────────────────────────────────────────────┘
+
+WebGL Transition Engine (browser-side):
+  Crossfade ──── Noir ↔ Rom-Com
+  Glitch    ──── Noir ↔ Horror · Rom-Com ↔ Horror
+  Radial    ──── Noir ↔ Sci-Fi · Horror ↔ Sci-Fi
+  Wipe      ──── Rom-Com ↔ Sci-Fi
 ```
 
 **Latency budget:** voice → visual change ≤ 800ms
